@@ -1,0 +1,58 @@
+#pragma kernel Main
+
+struct voxel
+{
+    int exists;
+};
+
+int3 model_size;
+float voxel_size;
+RWStructuredBuffer<voxel> voxels;
+
+float3 extrusion_point;
+float extrusion_radius;
+
+int get_voxel_index(int3 id)
+{
+    if (id.x >= model_size.x || id.y >= model_size.y || id.z >= model_size.z)
+    {
+        return -1;
+    }
+
+    return id.z * model_size.x * model_size.y + id.y * model_size.x + id.x;
+}
+
+float squared_distance(float3 a, float3 b)
+{
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+}
+
+bool is_in_extrusion_zone(uint3 id)
+{
+    const float3 offset = -voxel_size * model_size / 2;
+    const float3 voxel_coordinates = float3(
+        id.x * voxel_size + voxel_size / 2.0,
+        id.y * voxel_size + voxel_size / 2.0,
+        id.z * voxel_size + voxel_size / 2.0) + offset;
+
+    return squared_distance(extrusion_point, voxel_coordinates) < extrusion_radius * extrusion_radius;
+}
+
+void extrude_voxel(const uint index, int3 id)
+{
+    if (is_in_extrusion_zone(id))
+    {
+        voxels[index].exists = 1;
+    }
+}
+
+[numthreads(10, 10, 10)]
+void Main (uint3 id : SV_DispatchThreadID)
+{
+    const int index = get_voxel_index(id);
+
+    if (index != -1)
+    {
+        extrude_voxel(index, id);
+    }
+}

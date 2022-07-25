@@ -1,0 +1,24 @@
+#pragma kernel Main
+
+#define PI 3.14159
+
+int number_of_vertices;
+float angle;
+float period;
+float amplitude;
+float3 pivot_vertex;
+
+float time;
+RWStructuredBuffer<float3> vertices;
+
+[numthreads(1000, 1, 1)]
+void Main (uint3 id : SV_DispatchThreadID)
+{
+    const int index = id.x;
+    
+    if (index < number_of_vertices)
+    {
+        const float3 determining_vector = float3(cos(angle * PI / 180.0), 0, sin(angle * PI / 180.0));
+        vertices[index].y = amplitude * sin(dot(vertices[index] - pivot_vertex, determining_vector) + period * time);
+    }    
+}

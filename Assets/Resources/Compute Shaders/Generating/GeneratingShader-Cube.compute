@@ -1,0 +1,31 @@
+#pragma kernel Main
+
+struct voxel
+{
+    int exists;
+};
+
+int3 model_size;
+float voxel_size;
+RWStructuredBuffer<voxel> voxels;
+
+int get_voxel_index(int3 id)
+{
+    if (id.x >= model_size.x || id.y >= model_size.y || id.z >= model_size.z)
+    {
+        return -1;
+    }
+
+    return id.z * model_size.x * model_size.y + id.y * model_size.x + id.x;
+}
+
+[numthreads(10, 10, 10)]
+void Main (uint3 id : SV_DispatchThreadID)
+{
+    const int index = get_voxel_index(id);
+
+    if (index != -1)
+    {
+        voxels[index].exists = 1;
+    }
+}

@@ -1,0 +1,218 @@
+#pragma kernel Main
+
+struct voxel_triangle_data
+{
+    int x_front_side_index;    
+    int x_back_side_index;
+    int y_front_side_index;    
+    int y_back_side_index;
+    int z_front_side_index;    
+    int z_back_side_index;
+};
+
+uint3 model_size;
+float voxel_size;
+
+StructuredBuffer<voxel_triangle_data> voxel_triangles_data;
+
+RWStructuredBuffer<float3> vertices;
+RWStructuredBuffer<int> triangles;
+
+int get_voxel_index(uint3 id)
+{
+    if (id.x >= model_size.x || id.y >= model_size.y || id.z >= model_size.z)
+    {
+        return -1;
+    }
+
+    return id.z * model_size.x * model_size.y + id.y * model_size.x + id.x;
+}
+
+void build_x_back_side(const uint index, const uint3 id)
+{
+    const voxel_triangle_data data = voxel_triangles_data[index];
+    const int side_index = data.x_back_side_index;
+    if (side_index == -1) return;
+
+    const float3 v1 = float3(voxel_size * id.x, voxel_size * id.y, voxel_size * id.z);
+    const float3 v2 = float3(voxel_size * id.x, voxel_size * id.y, voxel_size * (id.z + 1));
+    const float3 v3 = float3(voxel_size * id.x, voxel_size * (id.y + 1), voxel_size * (id.z + 1));
+    const float3 v4 = float3(voxel_size * id.x, voxel_size * (id.y + 1), voxel_size * id.z);
+
+    const int VERTICES_PER_SIDE = 4;
+    const int TRIANGLE_VERTICES_PER_SIDE = 6;
+    const float3 offset = -voxel_size * model_size / 2;
+    
+    vertices[side_index * VERTICES_PER_SIDE] = v1 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 1] = v2 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 2] = v3 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 3] = v4 + offset;
+    
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 1] = side_index * VERTICES_PER_SIDE + 1;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 2] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 3] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 4] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 5] = side_index * VERTICES_PER_SIDE + 3;
+}
+
+void build_x_front_side(const uint index, const uint3 id)
+{
+    const voxel_triangle_data data = voxel_triangles_data[index];
+    const int side_index = data.x_front_side_index;
+    if (side_index == -1) return;
+    
+    const float3 v1 = float3(voxel_size * (id.x + 1), voxel_size * id.y, voxel_size * id.z);
+    const float3 v2 = float3(voxel_size * (id.x + 1), voxel_size * id.y, voxel_size * (id.z + 1));
+    const float3 v3 = float3(voxel_size * (id.x + 1), voxel_size * (id.y + 1), voxel_size * (id.z + 1));
+    const float3 v4 = float3(voxel_size * (id.x + 1), voxel_size * (id.y + 1), voxel_size * id.z);
+
+    const int VERTICES_PER_SIDE = 4;
+    const int TRIANGLE_VERTICES_PER_SIDE = 6;
+    const float3 offset = -voxel_size * model_size / 2;
+    
+    vertices[side_index * VERTICES_PER_SIDE] = v1 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 1] = v2 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 2] = v3 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 3] = v4 + offset;
+
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 1] = side_index * VERTICES_PER_SIDE + 3;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 2] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 3] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 4] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 5] = side_index * VERTICES_PER_SIDE + 1;
+}
+
+void build_y_back_side(const uint index, const uint3 id)
+{
+    const voxel_triangle_data data = voxel_triangles_data[index];
+    const int side_index = data.y_back_side_index;
+    if (side_index == -1) return;
+
+    const float3 v1 = float3(voxel_size * id.x, voxel_size * id.y, voxel_size * id.z);
+    const float3 v2 = float3(voxel_size * id.x, voxel_size * id.y, voxel_size * (id.z + 1));
+    const float3 v3 = float3(voxel_size * (id.x + 1), voxel_size * id.y, voxel_size * (id.z + 1));
+    const float3 v4 = float3(voxel_size * (id.x + 1), voxel_size * id.y, voxel_size * id.z);
+
+    const int VERTICES_PER_SIDE = 4;
+    const int TRIANGLE_VERTICES_PER_SIDE = 6;
+    const float3 offset = -voxel_size * model_size / 2;
+    
+    vertices[side_index * VERTICES_PER_SIDE] = v1 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 1] = v2 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 2] = v3 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 3] = v4 + offset;
+    
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 1] = side_index * VERTICES_PER_SIDE + 3;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 2] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 3] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 4] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 5] = side_index * VERTICES_PER_SIDE + 1;
+}
+
+void build_y_front_side(const uint index, const uint3 id)
+{
+    const voxel_triangle_data data = voxel_triangles_data[index];
+    const int side_index = data.y_front_side_index;
+    if (side_index == -1) return;
+
+    const float3 v1 = float3(voxel_size * id.x, voxel_size * (id.y + 1), voxel_size * id.z);
+    const float3 v2 = float3(voxel_size * id.x, voxel_size * (id.y + 1), voxel_size * (id.z + 1));
+    const float3 v3 = float3(voxel_size * (id.x + 1), voxel_size * (id.y + 1), voxel_size * (id.z + 1));
+    const float3 v4 = float3(voxel_size * (id.x + 1), voxel_size * (id.y + 1), voxel_size * id.z);
+
+    const int VERTICES_PER_SIDE = 4;
+    const int TRIANGLE_VERTICES_PER_SIDE = 6;
+    const float3 offset = -voxel_size * model_size / 2;
+    
+    vertices[side_index * VERTICES_PER_SIDE] = v1 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 1] = v2 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 2] = v3 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 3] = v4 + offset;
+    
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 1] = side_index * VERTICES_PER_SIDE + 1;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 2] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 3] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 4] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 5] = side_index * VERTICES_PER_SIDE + 3;
+}
+
+void build_z_back_side(const uint index, const uint3 id)
+{
+    const voxel_triangle_data data = voxel_triangles_data[index];
+    const int side_index = data.z_back_side_index;
+    if (side_index == -1) return;
+
+    const float3 v1 = float3(voxel_size * id.x, voxel_size * id.y, voxel_size * id.z);
+    const float3 v2 = float3(voxel_size * id.x, voxel_size * (id.y + 1), voxel_size * id.z);
+    const float3 v3 = float3(voxel_size * (id.x + 1), voxel_size * (id.y + 1), voxel_size * id.z);
+    const float3 v4 = float3(voxel_size * (id.x + 1), voxel_size * id.y, voxel_size * id.z);
+
+    const int VERTICES_PER_SIDE = 4;
+    const int TRIANGLE_VERTICES_PER_SIDE = 6;
+    const float3 offset = -voxel_size * model_size / 2;
+    
+    vertices[side_index * VERTICES_PER_SIDE] = v1 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 1] = v2 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 2] = v3 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 3] = v4 + offset;
+    
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 1] = side_index * VERTICES_PER_SIDE + 1;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 2] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 3] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 4] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 5] = side_index * VERTICES_PER_SIDE + 3;
+}
+
+void build_z_front_side(const uint index, const uint3 id)
+{
+    const voxel_triangle_data data = voxel_triangles_data[index];
+    const int side_index = data.z_front_side_index;
+    if (side_index == -1) return;
+
+    const float3 v1 = float3(voxel_size * id.x, voxel_size * id.y, voxel_size * (id.z + 1));
+    const float3 v2 = float3(voxel_size * id.x, voxel_size * (id.y + 1), voxel_size * (id.z + 1));
+    const float3 v3 = float3(voxel_size * (id.x + 1), voxel_size * (id.y + 1), voxel_size * (id.z + 1));
+    const float3 v4 = float3(voxel_size * (id.x + 1), voxel_size * id.y, voxel_size * (id.z + 1));
+
+    const int VERTICES_PER_SIDE = 4;
+    const int TRIANGLE_VERTICES_PER_SIDE = 6;
+    const float3 offset = -voxel_size * model_size / 2;
+    
+    vertices[side_index * VERTICES_PER_SIDE] = v1 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 1] = v2 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 2] = v3 + offset;
+    vertices[side_index * VERTICES_PER_SIDE + 3] = v4 + offset;
+    
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 1] = side_index * VERTICES_PER_SIDE + 3;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 2] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 3] = side_index * VERTICES_PER_SIDE;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 4] = side_index * VERTICES_PER_SIDE + 2;
+    triangles[side_index * TRIANGLE_VERTICES_PER_SIDE + 5] = side_index * VERTICES_PER_SIDE + 1;
+}
+
+void build_voxel(const uint index, const uint3 id)
+{
+    build_x_back_side(index, id);
+    build_x_front_side(index, id);
+    build_y_back_side(index, id);
+    build_y_front_side(index, id);
+    build_z_back_side(index, id);
+    build_z_front_side(index, id);
+}
+
+[numthreads(10, 10, 10)]
+void Main (uint3 id : SV_DispatchThreadID)
+{
+    const int index = get_voxel_index(id);
+    
+    if (index != -1)
+    {
+        build_voxel(index, id);
+    }
+}
