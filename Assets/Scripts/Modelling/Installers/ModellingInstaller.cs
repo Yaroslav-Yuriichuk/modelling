@@ -10,7 +10,7 @@ namespace Modelling
     public class ModellingInstaller : MonoInstaller
     {
         [SerializeField] private ModelObject _model;
-        [SerializeField] private Loading _loading;
+        [SerializeField] private LoadingElement _loadingElement;
         
         public override void InstallBindings()
         {
@@ -29,8 +29,8 @@ namespace Modelling
         private void BindLoading()
         {
             Container
-                .Bind<Loading>()
-                .FromComponentInNewPrefab(_loading)
+                .Bind<LoadingElement>()
+                .FromComponentInNewPrefab(_loadingElement)
                 .AsSingle();
         }
 

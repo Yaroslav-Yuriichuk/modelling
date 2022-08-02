@@ -6,23 +6,22 @@ namespace Modelling.Services
     {
         public bool IsLoading { get; private set; }
 
-        private Loading _loading;
+        private readonly LoadingElement _loadingElement;
         
-        public LoadingService(Loading loading)
+        public LoadingService(LoadingElement loadingElement)
         {
-            _loading = loading;
+            _loadingElement = loadingElement;
         }
         
         public void Show()
         {
             IsLoading = true;
-            _loading.Show();
+            _loadingElement.Show();
         }
 
         public void Hide()
         {
-            IsLoading = false;
-            _loading.Hide();
+            _loadingElement.Hide(() => IsLoading = false);
         }
     }
 }
