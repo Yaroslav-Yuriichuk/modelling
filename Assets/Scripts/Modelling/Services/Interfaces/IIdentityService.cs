@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Modelling.Services
 {
@@ -6,6 +8,7 @@ namespace Modelling.Services
     {
         public event Action<float> OnIdentityCalculated;
 
-        public void Calculate(Model firstModel, Model secondModel);
+        public void SetTargetModel(Model targetModel);
+        public Task Calculate(Model deformableModel, IEnumerable<ChunkId> chunksToRecalculate = null);
     }
 }

@@ -6,17 +6,30 @@ struct voxel
 };
 
 int3 model_size;
+int3 chunk_size;
+int3 chunk_id;
 float voxel_size;
+
 RWStructuredBuffer<voxel> voxels;
 
-int get_voxel_index(int3 id)
+int get_voxel_index_in_chunk(int3 id)
 {
-    if (id.x >= model_size.x || id.y >= model_size.y || id.z >= model_size.z)
+    if (id.x >= chunk_size.x || id.y >= chunk_size.y || id.z >= chunk_size.z)
     {
         return -1;
     }
 
-    return id.z * model_size.x * model_size.y + id.y * model_size.x + id.x;
+    return id.z * chunk_size.x * chunk_size.y + id.y * chunk_size.x + id.x;
+}
+
+bool is_in_model(uint3 id)
+{
+    bool is_valid = chunk_id.x * chunk_size.x + id.x < model_size.x;
+
+    is_valid = is_valid && chunk_id.y * chunk_size.y + id.y < model_size.y;
+    is_valid = is_valid && chunk_id.z * chunk_size.z + id.z < model_size.z;
+    
+    return is_valid;
 }
 
 float get_squared(float x)
@@ -26,7 +39,7 @@ float get_squared(float x)
 
 bool is_in_ellipse(uint3 id)
 {
-    const float3 offset = -voxel_size * model_size / 2;
+    const float3 offset = -voxel_size * model_size / 2 + voxel_size * chunk_size * chunk_id;
     
     const float3 ellipse_coordinates = float3(0, 0, 0);
 
@@ -47,7 +60,7 @@ bool is_in_ellipse(uint3 id)
 [numthreads(10, 10, 10)]
 void Main (uint3 id : SV_DispatchThreadID)
 {
-    const int index = get_voxel_index(id);
+    const int index = get_voxel_index_in_chunk(id);
     
     if (index != -1)
     {

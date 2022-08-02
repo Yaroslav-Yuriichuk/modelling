@@ -1,4 +1,5 @@
 ﻿using System;
+using Modelling.Geometry;
 using UnityEngine;
 
 namespace Modelling.Services
@@ -21,9 +22,12 @@ namespace Modelling.Services
 
             _intrusionShader = Resources.Load<ComputeShader>(intrusionShaderPath);
             _extrusionShader = Resources.Load<ComputeShader>(extrusionShaderPath);
+            
+            _intrusionShader.SetInts("chunk_size", Chunk.Width, Chunk.Height, Chunk.Length);
+            _extrusionShader.SetInts("chunk_size", Chunk.Width, Chunk.Height, Chunk.Length);
         }
 
-        public Model Intrude(Model model, Vector3 point)
+        public IntrusionResult Intrude(Model model, Vector3 point)
         {
             DateTime before = DateTime.Now;
             
@@ -33,26 +37,40 @@ namespace Modelling.Services
             _intrusionShader.SetFloat("intrusion_radius", IntrusionStrength / 2f);
             _intrusionShader.SetFloats("intrusion_point", point.x, point.y, point.z);
             
-            ComputeBuffer voxelsBuffer = new ComputeBuffer(model.TotalVolume, sizeof(int));
+            ComputeBuffer voxelsBuffer = new ComputeBuffer(Chunk.TotalVolume, sizeof(int));
 
-            VoxelData[] voxels = (VoxelData[])model.Voxels.Clone();
-            voxelsBuffer.SetData(voxels);
+            Chunk[] chunks = (Chunk[]) model.Chunks.Clone();
             
-            _intrusionShader.SetBuffer(0, "voxels", voxelsBuffer);
-            _intrusionShader.Dispatch(0, 
-                GetGroupsCount(model.Width),
-                GetGroupsCount(model.Height),
-                GetGroupsCount(model.Length));
+            ModificationShape intrusionShape = new Sphere(point, IntrusionStrength / 2);
+            var chunksIdToModify = model.GetInvolvedChunksId(intrusionShape);
+
+            foreach (var id in chunksIdToModify)
+            {
+                VoxelData[] voxels = (VoxelData[]) model.GetChunkAt(id).Voxels.Clone();
+                
+                voxelsBuffer.SetData(voxels);
             
-            voxelsBuffer.GetData(voxels);
+                _intrusionShader.SetInts("chunk_id", id.X, id.Y, id.Z);
+                _intrusionShader.SetBuffer(0, "voxels", voxelsBuffer);
+                
+                _intrusionShader.Dispatch(0, 
+                    GetGroupsCount(Chunk.Width),
+                    GetGroupsCount(Chunk.Height),
+                    GetGroupsCount(Chunk.Length));
+            
+                voxelsBuffer.GetData(voxels);
+                chunks[model.GetChunkIndex(id)] = new Chunk(id, voxels);
+            }
+            
             voxelsBuffer.Dispose();
             
             _logger.Log($"Intrusion took {(DateTime.Now - before).TotalSeconds:f3}");
-                
-            return new Model(voxels, model.Width, model.Height, model.Length, model.VoxelSize);
+            
+            Model newModel = new Model(chunks, model.Width, model.Height, model.Length, model.VoxelSize);
+            return new IntrusionResult(newModel, chunksIdToModify);
         }
 
-        public Model Extrude(Model model, Vector3 point)
+        public ExtrusionResult Extrude(Model model, Vector3 point)
         {
             DateTime before = DateTime.Now;
             
@@ -62,23 +80,35 @@ namespace Modelling.Services
             _extrusionShader.SetFloat("extrusion_radius", ExtrusionStrength / 2f);
             _extrusionShader.SetFloats("extrusion_point", point.x, point.y, point.z);
             
-            ComputeBuffer voxelsBuffer = new ComputeBuffer(model.TotalVolume, sizeof(int));
+            ComputeBuffer voxelsBuffer = new ComputeBuffer(Chunk.TotalVolume, sizeof(int));
 
-            VoxelData[] voxels = (VoxelData[])model.Voxels.Clone();
-            voxelsBuffer.SetData(voxels);
+            Chunk[] chunks = (Chunk[]) model.Chunks.Clone();
             
-            _extrusionShader.SetBuffer(0, "voxels", voxelsBuffer);
-            _extrusionShader.Dispatch(0, 
-                GetGroupsCount(model.Width),
-                GetGroupsCount(model.Height),
-                GetGroupsCount(model.Length));
+            ModificationShape extrusionShape = new Sphere(point, ExtrusionStrength / 2);
+            var chunksIdToModify = model.GetInvolvedChunksId(extrusionShape);
             
-            voxelsBuffer.GetData(voxels);
-            voxelsBuffer.Dispose();
-            
-            _logger.Log($"Intrusion took {(DateTime.Now - before).TotalSeconds:f3}");
+            foreach (var id in chunksIdToModify)
+            {
+                VoxelData[] voxels = (VoxelData[]) model.GetChunkAt(id).Voxels.Clone();
                 
-            return new Model(voxels, model.Width, model.Height, model.Length, model.VoxelSize);
+                voxelsBuffer.SetData(voxels);
+            
+                _extrusionShader.SetInts("chunk_id", id.X, id.Y, id.Z);
+                _extrusionShader.SetBuffer(0, "voxels", voxelsBuffer);
+                
+                _extrusionShader.Dispatch(0, 
+                    GetGroupsCount(Chunk.Width),
+                    GetGroupsCount(Chunk.Height),
+                    GetGroupsCount(Chunk.Length));
+            
+                voxelsBuffer.GetData(voxels);
+                chunks[model.GetChunkIndex(id)] = new Chunk(id, voxels);
+            }
+            
+            _logger.Log($"Extrusion took {(DateTime.Now - before).TotalSeconds:f3}");
+                
+            Model newModel = new Model(chunks, model.Width, model.Height, model.Length, model.VoxelSize);
+            return new ExtrusionResult(newModel, chunksIdToModify);
         }
         
         private int GetGroupsCount(int modelSize)
