@@ -1,4 +1,5 @@
 ﻿using Modelling.Services;
+using Modelling.UI;
 using UnityEngine;
 using Zenject;
 using ILogger = Modelling.Services.ILogger;
@@ -9,6 +10,7 @@ namespace Modelling
     public class ModellingInstaller : MonoInstaller
     {
         [SerializeField] private ModelObject _model;
+        [SerializeField] private Loading _loading;
         
         public override void InstallBindings()
         {
@@ -16,10 +18,38 @@ namespace Modelling
             BindExIntrusionService();
             BindInputService();
             BindModellingService();
-            BindModelBuildingService();
+            BindBuildingService();
             BindIdentityService();
             BindModelObject();
+            BindLoading();
+            BindLoadingService();
             BindLogger();
+        }
+
+        private void BindLoading()
+        {
+            Container
+                .Bind<Loading>()
+                .FromComponentInNewPrefab(_loading)
+                .AsSingle();
+        }
+
+        private void BindLoadingService()
+        {
+            Container
+                .Bind<ILoadingService>()
+                .To<LoadingService>()
+                .AsSingle()
+                .NonLazy();
+        }
+
+        private void BindBuildingService()
+        {
+            Container
+                .Bind<IBuildingService>()
+                .To<BuildingService>()
+                .AsSingle()
+                .NonLazy();
         }
 
         private void BindIdentityService()
@@ -27,15 +57,6 @@ namespace Modelling
             Container
                 .Bind<IIdentityService>()
                 .To<IdentityService>()
-                .AsSingle()
-                .NonLazy();
-        }
-
-        private void BindModelBuildingService()
-        {
-            Container
-                .Bind<IModelBuildingService>()
-                .To<ModelBuildingServiceCPUGPU>()
                 .AsSingle()
                 .NonLazy();
         }

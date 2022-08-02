@@ -16,6 +16,8 @@ namespace Modelling.Services
         public int Length; // Z
 
         public float VoxelSize;
+
+        public Size3D Size => new Size3D(Width, Height, Length);
         
         public ModelConstraints(ModelType type, int width, int height, int length, float voxelSize)
         {

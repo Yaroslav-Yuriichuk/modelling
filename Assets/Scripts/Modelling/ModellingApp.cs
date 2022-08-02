@@ -14,9 +14,7 @@ namespace Modelling
     public class ModellingApp : MonoBehaviour
     {
         [Header("Resolution")]
-        [SerializeField] private int _width;
-        [SerializeField] private int _height;
-        [SerializeField] private int _length;
+        [SerializeField] private Size3D _size;
         [SerializeField] private float _modelSize;
 
         [Header("Positions")]
@@ -26,6 +24,7 @@ namespace Modelling
         [Header("Controls")]
         [SerializeField] private Button _generateButton;
         [SerializeField] private Button _regenerateButton;
+        [SerializeField] private Button _exitButton;
 
         private const float ShowHideDuration = 1f;
         
@@ -34,30 +33,34 @@ namespace Modelling
 
         private IModellingService _modellingService;
         private IInputService _inputService;
-        private IExIntrusionService _exIntrusionService;
         private IModelGeneratingService _modelGeneratingService;
         private IIdentityService _identityService;
+        private ILoadingService _loadingService;
         private ILogger _logger;
         
         [Inject]
         private void Construct(IInputService inputService, IModellingService modellingService,
-            IExIntrusionService exIntrusionService, IModelGeneratingService modelGeneratingService,
-            IIdentityService identityService, ILogger logger,
+            IModelGeneratingService modelGeneratingService, IIdentityService identityService,
+            ILoadingService loadingService, ILogger logger,
             ModelObject deformableModel, ModelObject targetModel)
         {
             _modellingService = modellingService;
             _inputService = inputService;
-            _exIntrusionService = exIntrusionService;
             _modelGeneratingService = modelGeneratingService;
             _identityService = identityService;
+            _loadingService = loadingService;
             _logger = logger;
             
             _deformableModel = deformableModel;
             _targetModel = targetModel;
+
+            if (!_size.IsChunkable()) throw new ApplicationException("Model size must be evenly chunkable");
             
             _deformableModel.transform.SetParent(_deformableModelPosition, false);
+            _deformableModel.Init(_size, true);
             
             _targetModel.transform.SetParent(_targetModelPosition, false);
+            _targetModel.Init(_size, false);
             _targetModel.transform.localScale = Vector3.zero;
         }
 
@@ -65,18 +68,21 @@ namespace Modelling
         {
             _generateButton.onClick.AddListener(GenerateTargetModel);
             _regenerateButton.onClick.AddListener(GenerateTargetModel);
+            _exitButton.onClick.AddListener(CloseApp);
         }
 
         private void OnDisable()
         {
             _generateButton.onClick.RemoveListener(GenerateTargetModel);
             _regenerateButton.onClick.RemoveListener(GenerateTargetModel);
+            _exitButton.onClick.RemoveListener(CloseApp);
         }
 
         private void Start()
         {
+            float voxelSize = _modelSize / Mathf.Max(_size.Width, _size.Height, _size.Length);
             _deformableModel.ApplyModel(_modelGeneratingService.GenerateModel(
-                new ModelConstraints(ModelType.Cube, _width, _height, _length, _modelSize / _width)));
+                new ModelConstraints(ModelType.Cube, _size.Width, _size.Height, _size.Length, voxelSize)));
         }
 
         private void Update()
@@ -86,30 +92,28 @@ namespace Modelling
             if (_inputService.GetIntrusionPoint(out Vector3 point))
             {
                 _logger.Log($"Intrusion point: {point}");
-                _modellingService.AddCommand(new IntrudeCommand(_deformableModel, _exIntrusionService, point));
-                _identityService.Calculate(_deformableModel.Model, _targetModel.Model);
+                _modellingService.AddCommand(new IntrudeCommand(_deformableModel, point));
                 return;
             }
 
             if (_inputService.GetExtrusionPoint(out point))
             {
                 _logger.Log($"Extrusion point: {point}");
-                _modellingService.AddCommand(new ExtrudeCommand(_deformableModel, _exIntrusionService, point));
-                _identityService.Calculate(_deformableModel.Model, _targetModel.Model);
+                _modellingService.AddCommand(new ExtrudeCommand(_deformableModel, point));
                 return;
             }
 
             if (_inputService.WantsToUndo())
             {
                 _modellingService.UndoLastCommand();
-                _identityService.Calculate(_deformableModel.Model, _targetModel.Model);
             }
         }
 
         private void GenerateTargetModel()
         {
-            _generateButton.transform.DOScale(Vector3.zero, ShowHideDuration / 4);
-
+            const float normalizationInterval = 0.4f;
+            const float delayBeforeGenerating = 0.55f;
+            
             Sequence sequence = DOTween.Sequence();
 
             if (_targetModel.Model != null)
@@ -117,21 +121,28 @@ namespace Modelling
                 sequence.Append(_targetModel.transform.DOScale(Vector3.zero, ShowHideDuration));
                 _regenerateButton.transform.DOScale(Vector3.zero, ShowHideDuration / 3);
             }
+            else
+            {
+                sequence
+                    .Append(_generateButton.transform.DOScale(Vector3.zero, ShowHideDuration / 4));
+            }
 
             sequence
+                .AppendCallback(_loadingService.Show)
+                .AppendInterval(delayBeforeGenerating)
                 .AppendCallback(() =>
                 {
-                    _targetModel.UpdateCollider = false;
                     _targetModel.ApplyModel(_modelGeneratingService.GenerateModel(
-                        new ModelConstraints(GetRandomModelType(), _width, _height, _length, _modelSize / _width)));
-                    _regenerateButton.transform.DOScale(Vector3.one, ShowHideDuration / 3);
+                        new ModelConstraints(GetRandomModelType(), _size.Width, _size.Height, _size.Length,
+                            _modelSize / _size.Width)));
+                    
+                    _identityService.SetTargetModel(_targetModel.Model);
                 })
+                .AppendInterval(normalizationInterval)
+                .AppendCallback(_loadingService.Hide)
                 .Append(_targetModel.transform.DOScale(Vector3.one, ShowHideDuration))
-                .AppendCallback(() =>
-                {
-                    _identityService.Calculate(_deformableModel.Model, _targetModel.Model);
-                });
-
+                .AppendCallback(() => _identityService.Calculate(_deformableModel.Model))
+                .Append(_regenerateButton.transform.DOScale(Vector3.one, ShowHideDuration / 3));
             
             sequence.Play();
         }
@@ -152,6 +163,11 @@ namespace Modelling
             }
 
             return allowedTypes[Random.Range(0, allowedTypes.Count)];
+        }
+
+        private void CloseApp()
+        {
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
     }
 }
