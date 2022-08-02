@@ -88,6 +88,7 @@ namespace Modelling
         private void Update()
         {
             if (_targetModel.Model == null) return;
+            if (_loadingService.IsLoading) return;
             
             if (_inputService.GetIntrusionPoint(out Vector3 point))
             {
