@@ -5,9 +5,9 @@ struct voxel
     int exists;
 };
 
-int3 model_size;
-int3 chunk_size;
-int3 chunk_id;
+uint3 model_size;
+uint3 chunk_size;
+uint3 chunk_id;
 float voxel_size;
 
 RWStructuredBuffer<voxel> voxels;
@@ -17,7 +17,7 @@ float max(const float x, const float y, const float z)
     return max(x, max(y, z));
 }
 
-int get_voxel_index_in_chunk(int3 id)
+int get_voxel_index_in_chunk(const uint3 id)
 {
     if (id.x >= chunk_size.x || id.y >= chunk_size.y || id.z >= chunk_size.z)
     {
@@ -27,7 +27,7 @@ int get_voxel_index_in_chunk(int3 id)
     return id.z * chunk_size.x * chunk_size.y + id.y * chunk_size.x + id.x;
 }
 
-bool is_in_model(uint3 id)
+bool is_in_model(const uint3 id)
 {
     bool is_valid = chunk_id.x * chunk_size.x + id.x < model_size.x;
 
@@ -42,7 +42,7 @@ float squared_distance(float3 a, float3 b)
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
 }
 
-bool is_in_sphere(uint3 id)
+bool is_in_sphere(const uint3 id)
 {
     const float3 offset = -voxel_size * model_size / 2 + voxel_size * chunk_size * chunk_id;
     

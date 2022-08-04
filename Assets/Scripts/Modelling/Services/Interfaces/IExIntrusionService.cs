@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Modelling.Attributes;
+using Modelling.Geometry;
 using UnityEngine;
 
 namespace Modelling.Services
@@ -26,11 +28,22 @@ namespace Modelling.Services
             ModifiedChunksId = modifiedChunksId;
         }
     }
+
+    public enum ShapeType
+    {
+        [ConstructableShape(typeof(Sphere))]
+        Sphere,
+        [ConstructableShape(typeof(Cube))]
+        Cube,
+    }
     
     public interface IExIntrusionService
     {
         public float IntrusionStrength { get; set; }
         public float ExtrusionStrength { get; set; }
+     
+        public ShapeType IntrusionShapeType { get; set; }
+        public ShapeType ExtrusionShapeType { get; set; }
         
         public IntrusionResult Intrude(Model model, Vector3 point);
         public ExtrusionResult Extrude(Model model, Vector3 point);

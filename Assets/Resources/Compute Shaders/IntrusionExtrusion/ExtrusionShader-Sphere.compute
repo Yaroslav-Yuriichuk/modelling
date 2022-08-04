@@ -5,17 +5,17 @@ struct voxel
     int exists;
 };
 
-int3 model_size;
-int3 chunk_size;
-int3 chunk_id;
+uint3 model_size;
+uint3 chunk_size;
+uint3 chunk_id;
 float voxel_size;
 
 RWStructuredBuffer<voxel> voxels;
 
 float3 extrusion_point;
-float extrusion_radius;
+float extrusion_strength;
 
-int get_voxel_index_in_chunk(int3 id)
+int get_voxel_index_in_chunk(const uint3 id)
 {
     if (id.x >= chunk_size.x || id.y >= chunk_size.y || id.z >= chunk_size.z)
     {
@@ -25,7 +25,7 @@ int get_voxel_index_in_chunk(int3 id)
     return id.z * chunk_size.x * chunk_size.y + id.y * chunk_size.x + id.x;
 }
 
-bool is_in_model(uint3 id)
+bool is_in_model(const uint3 id)
 {
     bool is_valid = chunk_id.x * chunk_size.x + id.x < model_size.x;
 
@@ -48,10 +48,10 @@ bool is_in_extrusion_zone(uint3 id)
         id.y * voxel_size + voxel_size / 2.0,
         id.z * voxel_size + voxel_size / 2.0) + offset;
 
-    return squared_distance(extrusion_point, voxel_coordinates) < extrusion_radius * extrusion_radius;
+    return squared_distance(extrusion_point, voxel_coordinates) < extrusion_strength * extrusion_strength / 4;
 }
 
-void extrude_voxel(const uint index, int3 id)
+void extrude_voxel(const uint index, const uint3 id)
 {
     if (is_in_extrusion_zone(id))
     {
@@ -64,7 +64,7 @@ void Main (uint3 id : SV_DispatchThreadID)
 {
     const int index = get_voxel_index_in_chunk(id);
 
-    if (index != -1)
+    if (index != -1 && is_in_model(id))
     {
         extrude_voxel(index, id);
     }

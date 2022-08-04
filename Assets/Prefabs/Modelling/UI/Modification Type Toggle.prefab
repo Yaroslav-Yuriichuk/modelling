@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.24775714, g: 0.5943396, b: 0.17045209, a: 0.64705884}
+  m_Color: {r: 0.764151, g: 0.55704135, b: 0.22636168, a: 0.64705884}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -166,7 +166,7 @@ GameObject:
   - component: {fileID: 7318430005577946183}
   - component: {fileID: 9195899222614376843}
   m_Layer: 5
-  m_Name: Toggle
+  m_Name: Modification Type Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -191,7 +191,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7318430005577946183
 MonoBehaviour:
@@ -322,7 +322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7921569, g: 0.33333334, b: 0.33333334, a: 0.654902}
+  m_Color: {r: 0.7924528, g: 0.6996149, b: 0.4440726, a: 0.654902}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

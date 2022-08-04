@@ -87,11 +87,8 @@ namespace Modelling
             _identityService.Calculate(Model, сhunksToUpdate);
         }
 
-        private int GetChunkIndex(ChunkId id)
-        {
-            return GetChunkIndex(id.X, id.Y, id.Z);
-        }
-        
+        private int GetChunkIndex(ChunkId id) => GetChunkIndex(id.X, id.Y, id.Z);
+
         private int GetChunkIndex(int x, int y, int z)
         {
             return z * _sizeInChunks.Width * _sizeInChunks.Height + y * _sizeInChunks.Width + x;

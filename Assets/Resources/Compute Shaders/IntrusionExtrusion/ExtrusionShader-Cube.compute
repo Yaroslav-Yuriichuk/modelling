@@ -12,6 +12,9 @@ float voxel_size;
 
 RWStructuredBuffer<voxel> voxels;
 
+float3 extrusion_point;
+float extrusion_strength;
+
 int get_voxel_index_in_chunk(const uint3 id)
 {
     if (id.x >= chunk_size.x || id.y >= chunk_size.y || id.z >= chunk_size.z)
@@ -22,7 +25,7 @@ int get_voxel_index_in_chunk(const uint3 id)
     return id.z * chunk_size.x * chunk_size.y + id.y * chunk_size.x + id.x;
 }
 
-bool is_in_model(const uint3 id)
+bool is_in_model(uint3 id)
 {
     bool is_valid = chunk_id.x * chunk_size.x + id.x < model_size.x;
 
@@ -32,45 +35,43 @@ bool is_in_model(const uint3 id)
     return is_valid;
 }
 
-float get_squared(float x)
-{
-    return x * x;
-}
-
-bool is_in_ellipse(const uint3 id)
+bool is_in_extrusion_zone(const uint3 id)
 {
     const float3 offset = -voxel_size * model_size / 2 + voxel_size * chunk_size * chunk_id;
-    
-    const float3 ellipse_coordinates = float3(0, 0, 0);
-
     const float3 voxel_coordinates = float3(
         id.x * voxel_size + voxel_size / 2.0,
         id.y * voxel_size + voxel_size / 2.0,
         id.z * voxel_size + voxel_size / 2.0) + offset;
 
-    const float a = voxel_size * model_size.x / 2.0;
-    const float b = voxel_size * model_size.y / 4.0;
-    const float c = voxel_size * model_size.z / 2.0;
+    bool is_inside;
+
+    is_inside = (extrusion_point.x - extrusion_strength / 2 - voxel_coordinates.x)
+        * (extrusion_point.x + extrusion_strength / 2 - voxel_coordinates.x) < 0;
+
+    is_inside = is_inside && (extrusion_point.y - extrusion_strength / 2 - voxel_coordinates.y)
+        * (extrusion_point.y + extrusion_strength / 2 - voxel_coordinates.y) < 0;
+
+    is_inside = is_inside && (extrusion_point.z - extrusion_strength / 2 - voxel_coordinates.z)
+        * (extrusion_point.z + extrusion_strength / 2 - voxel_coordinates.z) < 0;
     
-    return get_squared(voxel_coordinates.x - ellipse_coordinates.x) / (a * a)
-        + get_squared(voxel_coordinates.y - ellipse_coordinates.y) / (b * b)
-        + get_squared(voxel_coordinates.z - ellipse_coordinates.z) / (c * c) <= 1.0;
+    return is_inside;
+}
+
+void extrude_voxel(const uint index, const uint3 id)
+{
+    if (is_in_extrusion_zone(id))
+    {
+        voxels[index].exists = 1;
+    }
 }
 
 [numthreads(10, 10, 10)]
 void Main (uint3 id : SV_DispatchThreadID)
 {
     const int index = get_voxel_index_in_chunk(id);
-    
-    if (index != -1)
+
+    if (index != -1 && is_in_model(id))
     {
-        if (is_in_ellipse(id))
-        {
-            voxels[index].exists = 1;
-        }
-        else
-        {
-            voxels[index].exists = 0;
-        }
+        extrude_voxel(index, id);
     }
 }
