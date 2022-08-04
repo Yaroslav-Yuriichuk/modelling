@@ -5,12 +5,12 @@ namespace Modelling.Geometry
     public class Sphere : ModificationShape
     {
         private Vector3 _center;
-        private float _radius;
+        private readonly float _radius;
 
-        public Sphere(Vector3 center, float radius)
+        public Sphere(Vector3 center, float diameter)
         {
             _center = center;
-            _radius = radius;
+            _radius = diameter / 2;
         }
 
         public override void MoveBy(Vector3 offset)
@@ -25,12 +25,14 @@ namespace Modelling.Geometry
                 voxelSize * chunk.Id.Y * Chunk.Height,
                 voxelSize * chunk.Id.Z * Chunk.Length);
 
-            return IntersectsWithSphereEdgePoints(voxelSize, chunkOffset)
-                || IntersectsWithEdges(voxelSize, chunkOffset);
+            return AnySphereEdgePointInChunk(voxelSize, chunkOffset)
+                   || IntersectsWithEdges(voxelSize, chunkOffset);
         }
 
         private bool IntersectsWithEdge(Edge edge)
         {
+            bool IsInSphere(Vector3 point) => Vector3.Distance(_center, point) <= _radius;
+
             if (IsInSphere(edge.A) || IsInSphere(edge.B)) return true;
 
             Vector3 projection = Vector3.Project(_center - edge.A, edge.B - edge.A);
@@ -42,12 +44,7 @@ namespace Modelling.Geometry
                 && Vector3.Dot(closestPointToCenter - edge.B, edge.A - edge.B) > 0;
         }
 
-        private bool IsInSphere(Vector3 point)
-        {
-            return Vector3.Distance(_center, point) <= _radius;
-        }
-
-        private bool IntersectsWithSphereEdgePoints(float voxelSize, Vector3 chunkOffset)
+        private bool AnySphereEdgePointInChunk(float voxelSize, Vector3 chunkOffset)
         {
             bool IsPointInChunk(Vector3 point)
             {

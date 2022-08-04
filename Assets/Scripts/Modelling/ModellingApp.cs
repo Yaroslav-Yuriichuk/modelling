@@ -113,7 +113,7 @@ namespace Modelling
         private void GenerateTargetModel()
         {
             const float normalizationInterval = 0.4f;
-            const float delayBeforeGenerating = 0.55f;
+            const float delayBeforeGenerating = 0.65f;
             
             Sequence sequence = DOTween.Sequence();
 
