@@ -1,4 +1,5 @@
-﻿using Modelling.Services;
+﻿using Modelling.Audio;
+using Modelling.Services;
 using Modelling.UI;
 using UnityEngine;
 using Zenject;
@@ -11,6 +12,7 @@ namespace Modelling
     {
         [SerializeField] private ModelObject _model;
         [SerializeField] private LoadingElement _loadingElement;
+        [SerializeField] private AudioPlayer _audioPlayer;
         
         public override void InstallBindings()
         {
@@ -23,7 +25,23 @@ namespace Modelling
             BindModelObject();
             BindLoading();
             BindLoadingService();
+            BindAudioService();
             BindLogger();
+        }
+
+        private void BindAudioService()
+        {
+            Container
+                .Bind<AudioPlayer>()
+                .FromComponentInNewPrefab(_audioPlayer)
+                .AsSingle()
+                .NonLazy();
+
+            Container
+                .Bind<IAudioService>()
+                .To<AudioService>()
+                .AsSingle()
+                .NonLazy();
         }
 
         private void BindLoading()

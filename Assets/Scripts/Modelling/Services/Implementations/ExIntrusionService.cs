@@ -14,13 +14,15 @@ namespace Modelling.Services
         public ShapeType IntrusionShapeType { get; set; }
         public ShapeType ExtrusionShapeType { get; set; }
 
+        private readonly IAudioService _audioService;
         private readonly ILogger _logger;
 
         private readonly Dictionary<ShapeType, ComputeShader> _intrusionShaders = new Dictionary<ShapeType, ComputeShader>();
         private readonly Dictionary<ShapeType, ComputeShader> _extrusionShaders = new Dictionary<ShapeType, ComputeShader>();
 
-        public ExIntrusionService(ILogger logger)
+        public ExIntrusionService(IAudioService audioService, ILogger logger)
         {
+            _audioService = audioService;
             _logger = logger;
 
             foreach (ShapeType shapeType in Enum.GetValues(typeof(ShapeType)))
@@ -78,6 +80,7 @@ namespace Modelling.Services
             
             voxelsBuffer.Dispose();
             
+            _audioService.PlaySound(SoundType.Intrusion);
             _logger.Log($"Intrusion took {(DateTime.Now - before).TotalSeconds:f3}");
             
             Model newModel = new Model(chunks, model.Width, model.Height, model.Length, model.VoxelSize);
@@ -121,6 +124,9 @@ namespace Modelling.Services
                 chunks[model.GetChunkIndex(id)] = new Chunk(id, voxels);
             }
             
+            voxelsBuffer.Dispose();
+            
+            _audioService.PlaySound(SoundType.Extrusion);
             _logger.Log($"Extrusion took {(DateTime.Now - before).TotalSeconds:f3}");
                 
             Model newModel = new Model(chunks, model.Width, model.Height, model.Length, model.VoxelSize);
