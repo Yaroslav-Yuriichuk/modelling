@@ -2710,6 +2710,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _model: {fileID: 4941641005151005104, guid: 1ea3488c87c542f4397ec77607039200, type: 3}
   _loadingElement: {fileID: 5101176203432728911, guid: ca8eafa520be12a489cb4702c5dbe9c2, type: 3}
+  _audioPlayer: {fileID: 5683038750493956139, guid: c51b3f37ae3555e42bcb16aa7c362506, type: 3}
 --- !u!1 &1998577876
 GameObject:
   m_ObjectHideFlags: 0
