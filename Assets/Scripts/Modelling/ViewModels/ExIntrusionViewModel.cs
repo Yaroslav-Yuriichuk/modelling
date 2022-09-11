@@ -1,6 +1,4 @@
-﻿using Modelling.Services;
-using UnityWeld.Binding;
-using Zenject;
+﻿using UnityWeld.Binding;
 
 namespace Modelling.ViewModels
 {

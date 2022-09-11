@@ -6,13 +6,7 @@ namespace Modelling.Services
     public class ModellingService : IModellingService
     {
         private Stack<ICommand> _commands = new Stack<ICommand>();
-        private readonly ILogger _logger;
-        
-        public ModellingService(ILogger logger)
-        {
-            _logger = logger;
-        }
-        
+
         public void AddCommand(ICommand command)
         {
             _commands.Push(command);

@@ -1,8 +1,8 @@
 ﻿using Modelling.ScriptableObjects;
-using Modelling.Services;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityWeld.Binding;
+using VoxelModelling.Services;
 using Zenject;
 
 namespace Modelling.ViewModels

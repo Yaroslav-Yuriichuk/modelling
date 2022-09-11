@@ -1,5 +1,5 @@
-﻿using Modelling.Services;
-using UnityWeld.Binding;
+﻿using UnityWeld.Binding;
+using VoxelModelling.Services;
 
 namespace Modelling.ViewModels
 {
