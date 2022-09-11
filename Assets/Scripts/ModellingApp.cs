@@ -58,8 +58,6 @@ namespace Modelling
             _deformableModel = deformableModel;
             _targetModel = targetModel;
 
-            if (!_size.IsChunkable()) throw new ApplicationException("Model size must be evenly chunkable");
-            
             _deformableModel.transform.SetParent(_deformableModelPosition, false);
             _deformableModel.Init(_size, true);
             
