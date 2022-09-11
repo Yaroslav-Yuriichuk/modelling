@@ -1,0 +1,3 @@
+[submodule "Assets/Modules/VoxelModelling"]
+	path = Assets/Modules/VoxelModelling
+	url = https://github.com/Yaroslav-Yuriichuk/voxel-modelling.git
