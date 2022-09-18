@@ -5,7 +5,7 @@ using Zenject;
 namespace Modelling.ViewModels
 {
     [Binding]
-    public class IdentityViewModel : MonoBehaviourViewModel
+    public sealed class IdentityViewModel : MonoBehaviourViewModel
     {
         #region Binding properties
 

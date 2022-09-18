@@ -4,7 +4,7 @@ using Zenject;
 
 namespace Modelling.Cameras
 {
-    public class CustomCameraYVertical : ZoomableCamera
+    public sealed class CustomCameraYVertical : ZoomableCamera
     {
         [Header("Speed")]
         [SerializeField] private float _horizontalSpeed;

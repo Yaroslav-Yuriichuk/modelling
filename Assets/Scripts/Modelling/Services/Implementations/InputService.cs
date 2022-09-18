@@ -3,7 +3,7 @@ using Zenject;
 
 namespace Modelling.Services
 {
-    public class InputService : IInputService, ITickable
+    public sealed class InputService : IInputService, ITickable
     {
         private Camera _camera;
 

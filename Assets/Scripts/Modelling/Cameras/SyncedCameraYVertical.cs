@@ -2,7 +2,7 @@
 
 namespace Modelling.Cameras
 {
-    public class SyncedCameraYVertical : CameraBase
+    public sealed class SyncedCameraYVertical : CameraBase
     {
         [Header("Other camera")]
         [SerializeField] private CameraBase _cameraToTrack;

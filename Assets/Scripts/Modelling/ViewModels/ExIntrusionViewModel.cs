@@ -3,7 +3,7 @@
 namespace Modelling.ViewModels
 {
     [Binding]
-    public class ExIntrusionViewModel : MonoBehaviourViewModel
+    public sealed class ExIntrusionViewModel : MonoBehaviourViewModel
     {
         #region Binding properties
 

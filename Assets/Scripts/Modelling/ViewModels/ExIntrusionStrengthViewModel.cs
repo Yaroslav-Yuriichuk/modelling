@@ -5,7 +5,7 @@ using Zenject;
 namespace Modelling.ViewModels
 {
     [Binding]
-    public class ExIntrusionStrengthViewModel : MonoBehaviourViewModel
+    public sealed class ExIntrusionStrengthViewModel : MonoBehaviourViewModel
     {
         #region Binding properties
 

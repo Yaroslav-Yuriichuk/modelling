@@ -3,7 +3,7 @@ using Modelling.Commands;
 
 namespace Modelling.Services
 {
-    public class ModellingService : IModellingService
+    public sealed class CommandsService : ICommandsService
     {
         private Stack<ICommand> _commands = new Stack<ICommand>();
 

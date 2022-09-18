@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Modelling.Services
 {
-    public class AudioService : IAudioService
+    public sealed class AudioService : IAudioService
     {
         private readonly AudioPlayer _audioPlayer;
 

@@ -14,7 +14,7 @@ namespace Modelling
         public override void InstallBindings()
         {
             BindInputService();
-            BindModellingService();
+            BindCommandsService();
             BindIdentityService();
             BindLoadingService();
             BindAudioService();
@@ -58,11 +58,11 @@ namespace Modelling
                 .NonLazy();
         }
 
-        private void BindModellingService()
+        private void BindCommandsService()
         {
             Container
-                .Bind<IModellingService>()
-                .To<ModellingService>()
+                .Bind<ICommandsService>()
+                .To<CommandsService>()
                 .AsSingle()
                 .NonLazy();
         }

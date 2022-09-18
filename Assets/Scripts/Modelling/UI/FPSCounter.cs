@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace Modelling.UI
 {
     [RequireComponent(typeof(Text))]
-    public class FPSCounter : MonoBehaviour
+    public sealed class FPSCounter : MonoBehaviour
     {
         [SerializeField] private Text _fpsCounter;
         [SerializeField] private float _updateInterval;

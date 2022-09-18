@@ -2,7 +2,7 @@
 
 namespace Modelling.Services
 {
-    public interface IModellingService
+    public interface ICommandsService
     {
         public void AddCommand(ICommand command);
         public void UndoLastCommand();

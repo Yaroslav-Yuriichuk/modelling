@@ -5,7 +5,7 @@ using VoxelModelling.Services;
 
 namespace Modelling.Commands
 {
-    public class IntrudeCommand : ICommand
+    public sealed class IntrudeCommand : ICommand
     {
         private readonly ModelObject _modelObject;
         private readonly Vector3 _point;

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Modelling.Audio
 {
     [RequireComponent(typeof(AudioSource))]
-    public class SourceAudioPlayer : AudioPlayer
+    public sealed class SourceAudioPlayer : AudioPlayer
     {
         [SerializeField] private AudioSource _audioSource;
 

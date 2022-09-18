@@ -5,7 +5,7 @@ using VoxelModelling.Services;
 
 namespace Modelling.Commands
 {
-    public class ExtrudeCommand : ICommand
+    public sealed class ExtrudeCommand : ICommand
     {
         private readonly ModelObject _modelObject;
         private readonly Vector3 _point;

@@ -4,7 +4,7 @@ using VoxelModelling.Services;
 namespace Modelling.ViewModels
 {
     [Binding]
-    public class IntrusionShapeSelectionViewModel : ShapeSelectionViewModel
+    public sealed class IntrusionShapeSelectionViewModel : ShapeSelectionViewModel
     {
         protected override void OnShapeTypeSelected(ShapeType shapeType)
         {

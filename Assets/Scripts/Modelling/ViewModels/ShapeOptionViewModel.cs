@@ -7,7 +7,7 @@ using VoxelModelling.Services;
 namespace Modelling.ViewModels
 {
     [Binding]
-    public class ShapeOptionViewModel : NonMonoBehaviourViewModel
+    public sealed class ShapeOptionViewModel : NonMonoBehaviourViewModel
     {
         #region Binding properties
 

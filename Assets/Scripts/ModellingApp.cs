@@ -13,7 +13,7 @@ using Random = UnityEngine.Random;
 
 namespace Modelling
 {
-    public class ModellingApp : MonoBehaviour
+    public sealed class ModellingApp : MonoBehaviour
     {
         [Header("Resolution")]
         [SerializeField] private Size3D _size;
@@ -33,7 +33,7 @@ namespace Modelling
         private ModelObject _deformableModel;
         private ModelObject _targetModel;
 
-        private IModellingService _modellingService;
+        private ICommandsService _commandsService;
         private IInputService _inputService;
         private IModelGeneratingService _modelGeneratingService;
         private IIdentityService _identityService;
@@ -42,12 +42,12 @@ namespace Modelling
         private ILogger _logger;
         
         [Inject]
-        private void Construct(IInputService inputService, IModellingService modellingService,
+        private void Construct(IInputService inputService, ICommandsService commandsService,
             IModelGeneratingService modelGeneratingService, IIdentityService identityService,
             ILoadingService loadingService, IAudioService audioService, ILogger logger,
             ModelObject deformableModel, ModelObject targetModel)
         {
-            _modellingService = modellingService;
+            _commandsService = commandsService;
             _inputService = inputService;
             _modelGeneratingService = modelGeneratingService;
             _identityService = identityService;
@@ -57,13 +57,6 @@ namespace Modelling
             
             _deformableModel = deformableModel;
             _targetModel = targetModel;
-
-            _deformableModel.transform.SetParent(_deformableModelPosition, false);
-            _deformableModel.Init(_size, true);
-            
-            _targetModel.transform.SetParent(_targetModelPosition, false);
-            _targetModel.Init(_size, false);
-            _targetModel.transform.localScale = Vector3.zero;
         }
 
         private void OnEnable()
@@ -82,6 +75,13 @@ namespace Modelling
 
         private void Start()
         {
+            _deformableModel.transform.SetParent(_deformableModelPosition, false);
+            _deformableModel.Init(_size, true);
+            
+            _targetModel.transform.SetParent(_targetModelPosition, false);
+            _targetModel.Init(_size, false);
+            _targetModel.transform.localScale = Vector3.zero;
+            
             float voxelSize = _modelSize / Mathf.Max(_size.Width, _size.Height, _size.Length);
             _deformableModel.ApplyModel(_modelGeneratingService.GenerateModel(
                 new ModelConstraints(ModelType.Cube, _size.Width, _size.Height, _size.Length, voxelSize)));
@@ -95,7 +95,7 @@ namespace Modelling
             if (_inputService.GetIntrusionPoint(out Vector3 point))
             {
                 _logger.Log($"Intrusion point: {point}");
-                _modellingService.AddCommand(new IntrudeCommand(_deformableModel, point, _identityService));
+                _commandsService.AddCommand(new IntrudeCommand(_deformableModel, point, _identityService));
                 _audioService.PlaySound(SoundType.Intrusion);
                 return;
             }
@@ -103,14 +103,14 @@ namespace Modelling
             if (_inputService.GetExtrusionPoint(out point))
             {
                 _logger.Log($"Extrusion point: {point}");
-                _modellingService.AddCommand(new ExtrudeCommand(_deformableModel, point, _identityService));
+                _commandsService.AddCommand(new ExtrudeCommand(_deformableModel, point, _identityService));
                 _audioService.PlaySound(SoundType.Extrusion);
                 return;
             }
 
             if (_inputService.WantsToUndo())
             {
-                _modellingService.UndoLastCommand();
+                _commandsService.UndoLastCommand();
             }
         }
 

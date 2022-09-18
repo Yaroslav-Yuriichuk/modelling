@@ -12,7 +12,7 @@ namespace Modelling.ScriptableObjects
     }
     
     [CreateAssetMenu(fileName = "ShapeOptions", menuName = "Modelling/ShapeOptions")]
-    public class ShapeOptions : ScriptableObject
+    public sealed class ShapeOptions : ScriptableObject
     {
         public ShapeData[] ShapeData;
     }

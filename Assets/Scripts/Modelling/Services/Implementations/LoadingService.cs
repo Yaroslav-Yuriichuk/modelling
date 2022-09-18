@@ -2,7 +2,7 @@
 
 namespace Modelling.Services
 {
-    public class LoadingService : ILoadingService
+    public sealed class LoadingService : ILoadingService
     {
         public bool IsLoading { get; private set; }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Modelling.UI
 {
-    public class LoadingElementPanel : LoadingElement
+    public sealed class LoadingElementPanel : LoadingElement
     {
         [SerializeField] private float _showHideDuration;
         [Tooltip("For proper work must be at hidden position at start")]

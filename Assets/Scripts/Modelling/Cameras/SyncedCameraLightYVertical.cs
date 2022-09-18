@@ -1,9 +1,8 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Modelling.Cameras
 {
-    public class SyncedCameraLightYVertical : MonoBehaviour
+    public sealed class SyncedCameraLightYVertical : MonoBehaviour
     {
         [SerializeField] private CameraBase _cameraToTrack;
         

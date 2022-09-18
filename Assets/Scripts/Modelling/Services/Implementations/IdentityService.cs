@@ -5,7 +5,7 @@ using VoxelModelling;
 
 namespace Modelling.Services
 {
-    public class IdentityService : IIdentityService
+    public sealed class IdentityService : IIdentityService
     {
         public event Action<float> OnIdentityCalculated;
 
